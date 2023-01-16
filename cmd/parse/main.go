@@ -10,7 +10,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"mckp/roberts-concordance/globals"
 	"os"
@@ -66,7 +65,7 @@ func main() {
 	// Parse JSON into Struct Above
 	filePath := globals.ArtifactsDir() + "/raw.json"
 
-	rawJSONContent, err := ioutil.ReadFile(filePath)
+	rawJSONContent, err := os.ReadFile(filePath)
 
 	if err != nil {
 		log.Panic("Error when opening file: ", err)
@@ -119,7 +118,7 @@ func main() {
 	file, _ := json.MarshalIndent(verses, "", " ")
 
 	// Write Verses File
-	_ = ioutil.WriteFile(globals.ArtifactsDir()+"/parsed/verses.json", file, 0644)
+	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/verses.json", file, 0644)
 
 	bookFilePath := globals.ArtifactsDir() + "/books.txt"
 
@@ -163,5 +162,5 @@ func main() {
 	bibleBook, _ := json.MarshalIndent(books, "", " ")
 
 	// Write Verses File
-	_ = ioutil.WriteFile(globals.ArtifactsDir()+"/parsed/bible.json", bibleBook, 0644)
+	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/bible.json", bibleBook, 0644)
 }
