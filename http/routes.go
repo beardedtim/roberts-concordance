@@ -56,5 +56,11 @@ func GetChapterForBook(ctx echo.Context) error {
 func FindVersesByIndex(ctx echo.Context) error {
 	query := ctx.QueryParam("query")
 
-	return ctx.JSON(http.StatusOK, data.GetVersesByIndex(query))
+	return ctx.JSON(http.StatusOK, data.GetVersesByIndexExact(query))
+}
+
+func SearchVersesForWord(ctx echo.Context) error {
+	query := ctx.QueryParam("query")
+
+	return ctx.JSON(http.StatusOK, data.GetVersesByIndexStem(query))
 }

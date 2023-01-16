@@ -3,6 +3,7 @@ module mckp/roberts-concordance
 go 1.19
 
 require (
+	github.com/kljensen/snowball v0.6.0
 	github.com/labstack/echo/v4 v4.10.0
 	golang.org/x/exp v0.0.0-20230116083435-1de6713980de
 )

@@ -22,7 +22,8 @@ func attachRoutes() {
 	server.GET("/.well-known/healthcheck", HealthCheck)
 	server.GET("/.well-known/readiness", ReadinessCheck)
 
-	server.GET("/search", FindVersesByIndex)
+	server.GET("/search", SearchVersesForWord)
+	server.GET("/search/exact", FindVersesByIndex)
 
 	server.GET("/bible", GetBible)
 	server.GET("/bible/books", GetBooksOfBible)

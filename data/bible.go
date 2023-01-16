@@ -6,6 +6,8 @@ import (
 	"mckp/roberts-concordance/globals"
 	"os"
 	"strings"
+
+	"github.com/kljensen/snowball"
 )
 
 type BibleVerse struct {
@@ -38,10 +40,16 @@ var jsonFile []BibleBook
 var bookIndex map[string]int
 var booksInOrder []string
 var wordIndex map[string][]WordIndex
+var stemIndex map[string][]WordIndex
+
+var BIBLE_JSON_PATH = globals.ArtifactsDir() + "/parsed/bible.json"
+var BIBLE_BOOKS_PATH = globals.ArtifactsDir() + "/books.txt"
+var INDEX_WORDS_PATH = globals.ArtifactsDir() + "/parsed/index-words.json"
+var INDEX_STEM_PATH = globals.ArtifactsDir() + "/parsed/index-stemmed.json"
 
 func readAndAssign() {
 	// read JSON and assign data
-	file, err := os.ReadFile(globals.ArtifactsDir() + "/parsed/bible.json")
+	file, err := os.ReadFile(BIBLE_JSON_PATH)
 
 	if err != nil {
 		log.Println(err)
@@ -51,7 +59,7 @@ func readAndAssign() {
 	json.Unmarshal(file, &jsonFile)
 
 	// read book names and assign data
-	bookNames, _ := os.ReadFile(globals.ArtifactsDir() + "/books.txt")
+	bookNames, _ := os.ReadFile(BIBLE_JSON_PATH)
 	split := strings.Split(string(bookNames), "\n")
 	bi := make(map[string]int)
 	ordered := make([]string, len(split))
@@ -65,9 +73,13 @@ func readAndAssign() {
 	booksInOrder = ordered
 
 	// read index and assign data
-	indexRaw, _ := os.ReadFile(globals.ArtifactsDir() + "/parsed/index.json")
+	indexRaw, _ := os.ReadFile(INDEX_WORDS_PATH)
 
 	json.Unmarshal(indexRaw, &wordIndex)
+
+	stemRaw, _ := os.ReadFile(INDEX_STEM_PATH)
+
+	json.Unmarshal(stemRaw, &stemIndex)
 }
 
 func GetBooks() []string {
@@ -111,10 +123,23 @@ func GetVerseFromBook(book string, chapter int, start int, end int) []BibleVerse
 	return chapterList.Verses[start:end]
 }
 
-func GetVersesByIndex(search string) []WordIndex {
-	if len(wordIndex) == 0 {
+func GetVersesByIndexStem(search string) []WordIndex {
+	if len(stemIndex) == 0 {
 		readAndAssign()
 	}
 
-	return wordIndex[search]
+	stemmed, _ := snowball.Stem(search, "english", true)
+	stemmedMatch := stemIndex[stemmed]
+
+	return stemmedMatch
+}
+
+func GetVersesByIndexExact(search string) []WordIndex {
+	if len(stemIndex) == 0 {
+		readAndAssign()
+	}
+
+	result := wordIndex[search]
+
+	return result
 }

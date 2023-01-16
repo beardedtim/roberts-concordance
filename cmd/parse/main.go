@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/kljensen/snowball"
 	"golang.org/x/exp/slices"
 )
 
@@ -205,8 +206,9 @@ func mapFieldsToVerses(fields []Field, books []BibleBook) []BibleVerse {
 	return output
 }
 
-func createIndex(verses []BibleVerse, books []BibleBook) Index {
+func createIndex(verses []BibleVerse, books []BibleBook) (Index, Index) {
 	wordIndex := make(Index)
+	stemIndex := make(Index)
 
 	for _, verse := range verses {
 		// make index
@@ -215,6 +217,7 @@ func createIndex(verses []BibleVerse, books []BibleBook) Index {
 
 		for _, word := range strings.Fields(text) {
 			index := strings.ToLower(nonAlphanumericRegex.ReplaceAllString(word, ""))
+
 			if strings.Contains(index, "-") {
 				// if the word is hyphenated, let's make sure that we
 				// index all three options. Ex:
@@ -226,6 +229,13 @@ func createIndex(verses []BibleVerse, books []BibleBook) Index {
 				split := strings.Split(index, "-")
 
 				for _, splitWord := range split {
+					stemmed, _ := snowball.Stem(splitWord, "english", true)
+					stemIndex[stemmed] = append(stemIndex[stemmed], WordIndex{
+						Book:    verse.Book,
+						Chapter: verse.Chapter,
+						Verse:   verse.Verse,
+					})
+
 					wordIndex[splitWord] = append(wordIndex[splitWord], WordIndex{
 						Book:    verse.Book,
 						Chapter: verse.Chapter,
@@ -233,6 +243,14 @@ func createIndex(verses []BibleVerse, books []BibleBook) Index {
 					})
 				}
 			}
+
+			stemmed, _ := snowball.Stem(index, "english", true)
+
+			stemIndex[stemmed] = append(stemIndex[stemmed], WordIndex{
+				Book:    verse.Book,
+				Chapter: verse.Chapter,
+				Verse:   verse.Verse,
+			})
 
 			wordIndex[index] = append(wordIndex[index], WordIndex{
 				Book:    verse.Book,
@@ -242,14 +260,16 @@ func createIndex(verses []BibleVerse, books []BibleBook) Index {
 		}
 	}
 
-	return wordIndex
+	return wordIndex, stemIndex
 }
 
-func writeIndexToDisk(wordIndex Index) {
-	index, _ := json.MarshalIndent(wordIndex, "", " ")
+func writeIndexToDisk(wordIndex Index, stemIndex Index) {
+	windex, _ := json.MarshalIndent(wordIndex, "", " ")
+	sindex, _ := json.MarshalIndent(stemIndex, "", " ")
 
-	// Write Index File
-	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/index.json", index, 0644)
+	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/index-words.json", windex, 0644)
+	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/index-stemmed.json", sindex, 0644)
+
 }
 
 var compiled, _ = regexp.Compile(`\{.*?\}`)
@@ -296,8 +316,8 @@ func main() {
 	verses := mapFieldsToVerses(fields, books)
 
 	books = groupVersesByChapter(books, verses)
-	wordIndex := createIndex(verses, books)
+	wordIndex, stemIndex := createIndex(verses, books)
 	writeVersesToDisk(verses)
 	writeBooksToDisk(books)
-	writeIndexToDisk(wordIndex)
+	writeIndexToDisk(wordIndex, stemIndex)
 }
