@@ -68,3 +68,20 @@ func GetText() []BibleBook {
 
 	return jsonFile
 }
+
+func GetBookByName(name string) BibleBook {
+	if len(bookIndex) == 0 {
+		readAndAssign()
+	}
+
+	bookI := bookIndex[name]
+	verses := jsonFile[bookI]
+
+	return verses
+}
+
+func GetVerseFromBook(book string, start int, end int) []BibleVerse {
+	verses := GetBookByName(book)
+	log.Println(start, end)
+	return verses.Verses[start:end]
+}

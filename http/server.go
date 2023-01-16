@@ -24,7 +24,8 @@ func attachRoutes() {
 
 	server.GET("/bible", GetBible)
 	server.GET("/bible/books", GetBooksOfBible)
-
+	server.GET("/bible/:book", GetSpecificBookOfBible)
+	server.GET("/bible/:book/verses", GetVersesForBookOfBible)
 }
 
 func configure() {

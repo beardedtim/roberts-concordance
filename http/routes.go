@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"mckp/roberts-concordance/data"
 
@@ -22,4 +23,18 @@ func GetBible(ctx echo.Context) error {
 
 func GetBooksOfBible(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, data.GetBooks())
+}
+
+func GetSpecificBookOfBible(ctx echo.Context) error {
+	bookName := ctx.QueryParam("book")
+
+	return ctx.JSON(http.StatusOK, data.GetBookByName(bookName))
+}
+
+func GetVersesForBookOfBible(ctx echo.Context) error {
+	bookName := ctx.Param("book")
+	start, _ := strconv.Atoi(ctx.QueryParam("start"))
+	end, _ := strconv.Atoi(ctx.QueryParam("end"))
+
+	return ctx.JSON(http.StatusOK, data.GetVerseFromBook(bookName, start, end))
 }
