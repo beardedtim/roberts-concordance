@@ -1,15 +1,19 @@
 package main
 
 import (
+	"log"
+	http "mckp/roberts-concordance/http"
 	monitoring "mckp/roberts-concordance/monitoring"
 )
 
 func main() {
 	monitoring.Init()
 
-	// content, err := ioutil.ReadFile(globals.ArtifactsDir())
+	http.Create()
 
-	// if err != nil {
-	// 	log.Panic(err)
-	// }
+	err := http.Start(9999)
+
+	if err != nil {
+		log.Panic(err)
+	}
 }

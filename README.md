@@ -10,7 +10,7 @@ the language and to also learn more about the Bible.
 ### Server
 
 ```sh
-make server
+make start
 ```
 
 ### Parsing
