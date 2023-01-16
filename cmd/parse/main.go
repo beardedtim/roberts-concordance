@@ -15,9 +15,12 @@ import (
 	"encoding/json"
 	"log"
 	"mckp/roberts-concordance/globals"
+
 	"os"
 	"regexp"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 type Field struct {
@@ -36,9 +39,16 @@ type BibleVerse struct {
 	Notes   []string `json:"notes"`
 }
 
+type BibleChapter struct {
+	Book    string       `json:"book"`
+	Chapter int          `json:"chapter"`
+	Verses  []BibleVerse `json:"verses"`
+}
+
 type BibleBook struct {
-	Book   string       `json:"book"`
-	Verses []BibleVerse `json:"verses"`
+	Book     string         `json:"book"`
+	Chapters []BibleChapter `json:"chapters"`
+	Verses   []BibleVerse   `json:"verses"`
 }
 
 type WordIndex struct {
@@ -72,7 +82,9 @@ type JSONData struct {
 	} `json:"resultset"`
 }
 
-func main() {
+func getBibleJSON() []struct {
+	Field Field `json:"field"`
+} {
 	// Parse JSON into Struct Above
 	filePath := globals.ArtifactsDir() + "/raw.json"
 
@@ -90,47 +102,17 @@ func main() {
 		log.Fatal("Error during Unmarshal(): ", err)
 	}
 
-	allVerses := parsedJSONData.Resultset.Row
+	return parsedJSONData.Resultset.Row
+}
 
-	reg := `\{.*?\}`
-	compiled, _ := regexp.Compile(reg)
-
-	var verses []Field
-
-	for _, field := range allVerses {
-		matched := compiled.FindStringIndex(field.Field.Text)
-
-		if matched != nil {
-			beginIndex := matched[0]
-			endIndex := matched[1]
-
-			note := field.Field.Text[beginIndex:endIndex]
-
-			notes := []string{note[1 : len(note)-1]}
-
-			verses = append(verses, Field{
-				Book:    field.Field.Book,
-				Chapter: field.Field.Chapter,
-				Verse:   field.Field.Verse,
-				Text:    strings.ReplaceAll(field.Field.Text, note, ""),
-				Notes:   notes,
-			})
-		} else {
-			verses = append(verses, Field{
-				Book:    field.Field.Book,
-				Chapter: field.Field.Chapter,
-				Verse:   field.Field.Verse,
-				Text:    field.Field.Text,
-				Notes:   []string{},
-			})
-		}
-	}
-
+func writeVersesToDisk(verses []BibleVerse) {
 	file, _ := json.MarshalIndent(verses, "", " ")
 
 	// Write Verses File
 	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/verses.json", file, 0644)
+}
 
+func getBooks() []BibleBook {
 	bookFilePath := globals.ArtifactsDir() + "/books.txt"
 
 	bookBytes, err := os.ReadFile(bookFilePath)
@@ -139,11 +121,11 @@ func main() {
 		log.Panic("Cannot read book file path "+bookFilePath, err)
 	}
 
-	bookNames := strings.Split(string(bookBytes), "\n")
+	names := strings.Split(string(bookBytes), "\n")
 
-	books := make([]BibleBook, len(bookNames))
+	books := make([]BibleBook, len(names))
 
-	for i, bookName := range bookNames {
+	for i, bookName := range names {
 		book := books[i]
 
 		book.Book = bookName
@@ -152,33 +134,87 @@ func main() {
 		books[i] = book
 	}
 
+	return books
+}
+
+func groupVersesByChapter(books []BibleBook, verses []BibleVerse) []BibleBook {
+	bookIndex := make(map[string]int)
+
+	for _, verse := range verses {
+		index, exists := bookIndex[verse.Book]
+
+		if !exists {
+			index = slices.IndexFunc(books, func(book BibleBook) bool {
+				return book.Book == verse.Book
+			})
+
+			bookIndex[verse.Book] = index
+		}
+
+		book := books[index]
+
+		// assign all verses to book
+		book.Verses = append(book.Verses, verse)
+
+		// if this chapter already exists
+		if len(book.Chapters) > verse.Chapter-1 {
+			book.Chapters[verse.Chapter-1].Verses = append(book.Chapters[verse.Chapter-1].Verses, verse)
+		} else {
+			book.Chapters = append(book.Chapters, BibleChapter{
+				Book:    verse.Book,
+				Chapter: verse.Chapter,
+				Verses:  []BibleVerse{verse},
+			})
+		}
+
+		books[index] = book
+	}
+
+	return books
+}
+
+func writeBooksToDisk(books []BibleBook) {
+
+	bibleBook, _ := json.MarshalIndent(books, "", " ")
+
+	// Write Verses File
+	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/bible.json", bibleBook, 0644)
+}
+
+func fieldtoVerse(field Field, books []BibleBook) BibleVerse {
+	bookIndex := field.Book
+
+	book := books[bookIndex]
+
+	return BibleVerse{
+		Book:    book.Book,
+		Chapter: field.Chapter,
+		Verse:   field.Verse,
+		Text:    field.Text,
+		Notes:   field.Notes,
+	}
+}
+
+func mapFieldsToVerses(fields []Field, books []BibleBook) []BibleVerse {
+	output := make([]BibleVerse, len(fields))
+
+	for i, value := range fields {
+		output[i] = fieldtoVerse(value, books)
+	}
+
+	return output
+}
+
+func createIndex(verses []BibleVerse, books []BibleBook) Index {
 	wordIndex := make(Index)
 
-	for _, field := range verses {
-		verse := field
-
-		bookIndex := verse.Book
-
-		book := books[bookIndex]
-
-		// Make book
-		verseHash := BibleVerse{
-			Book:    book.Book,
-			Chapter: verse.Chapter,
-			Verse:   verse.Verse,
-			Text:    verse.Text,
-			Notes:   verse.Notes,
-		}
-		book.Verses = append(book.Verses, verseHash)
-
-		books[bookIndex] = book
-
+	for _, verse := range verses {
 		// make index
-		text := verseHash.Text
+		text := verse.Text
 		var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9\-]+`)
 
 		for _, word := range strings.Fields(text) {
-			index := nonAlphanumericRegex.ReplaceAllString(word, "")
+			index := strings.ToLower(nonAlphanumericRegex.ReplaceAllString(word, ""))
 			if strings.Contains(index, "-") {
 				// if the word is hyphenated, let's make sure that we
 				// index all three options. Ex:
@@ -191,27 +227,77 @@ func main() {
 
 				for _, splitWord := range split {
 					wordIndex[splitWord] = append(wordIndex[splitWord], WordIndex{
-						Book:    verseHash.Book,
+						Book:    verse.Book,
 						Chapter: verse.Chapter,
 						Verse:   verse.Verse,
 					})
 				}
 			}
 
-			wordIndex[index] = append(wordIndex[word], WordIndex{
-				Book:    verseHash.Book,
+			wordIndex[index] = append(wordIndex[index], WordIndex{
+				Book:    verse.Book,
 				Chapter: verse.Chapter,
 				Verse:   verse.Verse,
 			})
 		}
 	}
 
-	bibleBook, _ := json.MarshalIndent(books, "", " ")
+	return wordIndex
+}
 
-	// Write Verses File
-	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/bible.json", bibleBook, 0644)
+func writeIndexToDisk(wordIndex Index) {
 	index, _ := json.MarshalIndent(wordIndex, "", " ")
 
 	// Write Index File
 	_ = os.WriteFile(globals.ArtifactsDir()+"/parsed/index.json", index, 0644)
+}
+
+var compiled, _ = regexp.Compile(`\{.*?\}`)
+
+func ParseFieldInformation(field Field) Field {
+	matched := compiled.FindStringIndex(field.Text)
+
+	if matched != nil {
+		beginIndex := matched[0]
+		endIndex := matched[1]
+
+		note := field.Text[beginIndex:endIndex]
+
+		notes := []string{note[1 : len(note)-1]}
+
+		return Field{
+			Book:    field.Book,
+			Chapter: field.Chapter,
+			Verse:   field.Verse,
+			Text:    strings.ReplaceAll(field.Text, note, ""),
+			Notes:   notes,
+		}
+	} else {
+		return Field{
+			Book:    field.Book,
+			Chapter: field.Chapter,
+			Verse:   field.Verse,
+			Text:    field.Text,
+			Notes:   []string{},
+		}
+	}
+}
+
+func main() {
+	allVerses := getBibleJSON()
+
+	var fields []Field
+
+	for _, field := range allVerses {
+		fields = append(fields, ParseFieldInformation(field.Field))
+	}
+	books := getBooks()
+
+	verses := mapFieldsToVerses(fields, books)
+
+	books = groupVersesByChapter(books, verses)
+	wordIndex := createIndex(verses, books)
+	writeVersesToDisk(verses)
+	writeBooksToDisk(books)
+	writeIndexToDisk(wordIndex)
 }

@@ -16,14 +16,28 @@ type BibleVerse struct {
 	Notes   []string `json:"notes"`
 }
 
+type WordIndex struct {
+	Book    string `json:"book"`
+	Chapter int    `json:"chapter"`
+	Verse   int    `json:"verse"`
+}
+
+type BibleChapter struct {
+	Book    string       `json:"book"`
+	Chapter int          `json:"chapter"`
+	Verses  []BibleVerse `json:"verses"`
+}
+
 type BibleBook struct {
-	Book   string       `json:"book"`
-	Verses []BibleVerse `json:"verses"`
+	Book     string         `json:"book"`
+	Verses   []BibleVerse   `json:"verses"`
+	Chapters []BibleChapter `json:"chapters"`
 }
 
 var jsonFile []BibleBook
 var bookIndex map[string]int
 var booksInOrder []string
+var wordIndex map[string][]WordIndex
 
 func readAndAssign() {
 	// read JSON and assign data
@@ -49,6 +63,11 @@ func readAndAssign() {
 
 	bookIndex = bi
 	booksInOrder = ordered
+
+	// read index and assign data
+	indexRaw, _ := os.ReadFile(globals.ArtifactsDir() + "/parsed/index.json")
+
+	json.Unmarshal(indexRaw, &wordIndex)
 }
 
 func GetBooks() []string {
@@ -80,8 +99,22 @@ func GetBookByName(name string) BibleBook {
 	return verses
 }
 
-func GetVerseFromBook(book string, start int, end int) []BibleVerse {
-	verses := GetBookByName(book)
-	log.Println(start, end)
-	return verses.Verses[start:end]
+func GetChapterFromBook(book string, chapter int) BibleChapter {
+	bibleBook := GetBookByName(book)
+	return bibleBook.Chapters[chapter]
+}
+
+func GetVerseFromBook(book string, chapter int, start int, end int) []BibleVerse {
+	bibleBook := GetBookByName(book)
+	chapterList := bibleBook.Chapters[chapter]
+
+	return chapterList.Verses[start:end]
+}
+
+func GetVersesByIndex(search string) []WordIndex {
+	if len(wordIndex) == 0 {
+		readAndAssign()
+	}
+
+	return wordIndex[search]
 }

@@ -33,10 +33,28 @@ func GetSpecificBookOfBible(ctx echo.Context) error {
 
 func GetVersesForBookOfBible(ctx echo.Context) error {
 	bookName := ctx.Param("book")
+	chapterStr := ctx.Param("chapter")
+	chapter, _ := strconv.Atoi(chapterStr)
 	start, _ := strconv.Atoi(ctx.QueryParam("start"))
 	end, _ := strconv.Atoi(ctx.QueryParam("end"))
 
-	// start - 1 so that we use index and not the verse number.
-	// i.e index 0 is verse 1
-	return ctx.JSON(http.StatusOK, data.GetVerseFromBook(bookName, start-1, end))
+	// start - 1/chapter -1 so that we use index and not the verse number.
+	// i.e index 0 is verse 1; index 0 is chapter 1
+	return ctx.JSON(http.StatusOK, data.GetVerseFromBook(bookName, chapter-1, start-1, end))
+}
+
+func GetChapterForBook(ctx echo.Context) error {
+	bookName := ctx.Param("book")
+	chapterStr := ctx.Param("chapter")
+	chapter, _ := strconv.Atoi(chapterStr)
+
+	//chapter -1 so that we use index and not the verse number.
+	// i.e index 0 is chapter 1
+	return ctx.JSON(http.StatusOK, data.GetChapterFromBook(bookName, chapter-1))
+}
+
+func FindVersesByIndex(ctx echo.Context) error {
+	query := ctx.QueryParam("query")
+
+	return ctx.JSON(http.StatusOK, data.GetVersesByIndex(query))
 }
