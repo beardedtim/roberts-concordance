@@ -1,0 +1,345 @@
+_type: export
+__export_format: 4
+__export_date: 2023-01-16T18:10:44.930Z
+__export_source: insomnia.desktop.app:v2022.7.2
+resources:
+  - _id: req_dd467d21ce0c4de5b77b26c542a29a16
+    parentId: fld_f07b80969aaa4b88b726363ee11941f8
+    modified: 1673883518816
+    created: 1673883382037
+    url: "{{ _.url }}/.well-known/healthcheck"
+    name: HealthCheck
+    description: >-
+      ## Usage
+
+
+      Make a request to this endpoint any time you want to validate that the service is healthy and currently running well
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673883382037
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_f07b80969aaa4b88b726363ee11941f8
+    parentId: wrk_46f987bbe97a4103a36192e73b981196
+    modified: 1673883447789
+    created: 1673883360179
+    name: Well Known
+    description: ""
+    environment: {}
+    environmentPropertyOrder: {}
+    metaSortKey: -1673883360179
+    _type: request_group
+  - _id: wrk_46f987bbe97a4103a36192e73b981196
+    parentId: null
+    modified: 1673892611033
+    created: 1673883316883
+    name: Roberts Concordance
+    description: >-
+      ## Usage
+
+
+      This is used to create and serve an index of the Bible with a REST-ful API to get verses
+    scope: collection
+    _type: workspace
+  - _id: req_29a37bfe25f649dcaf01325cd54f0f9d
+    parentId: fld_f07b80969aaa4b88b726363ee11941f8
+    modified: 1673883554392
+    created: 1673883463402
+    url: "{{ _.url }}/.well-known/readiness"
+    name: ReadinessCheck
+    description: >-
+      ## Usage
+
+
+      Use this endpoint to see if the system is "ready", I.E has spun up and can be considerend "ready" by the orchestrator like K8s or Docker-Compose
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1671558024246
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_7312f444103c489dab43111886b555a9
+    parentId: fld_f0264a4704a54b7aa387537b309c6b65
+    modified: 1673885179171
+    created: 1673883566919
+    url: "{{ _.url }}/bible"
+    name: Get Full Bible
+    description: |-
+      ## Usage
+
+      Gets the full bible, all ~5mb of it, in JSON format
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673883566919
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_f0264a4704a54b7aa387537b309c6b65
+    parentId: wrk_46f987bbe97a4103a36192e73b981196
+    modified: 1673883564951
+    created: 1673883564951
+    name: Bible
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1673883564951
+    _type: request_group
+  - _id: req_98232c5efe9f4ad68bbaff73e4c440a4
+    parentId: fld_f0264a4704a54b7aa387537b309c6b65
+    modified: 1673885191499
+    created: 1673883980479
+    url: "{{ _.url }}/bible/books"
+    name: Get Books of Bible
+    description: |-
+      ## Usage
+
+      Returns a list of the Books of the Bible in Order
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673883980479
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_697c536777b043fbb2f7bf6e777c9939
+    parentId: fld_fa04c1f582d3442b9bc3e4bb46ecb441
+    modified: 1673892575135
+    created: 1673890590699
+    url: "{{ _.url }}/search?query=god"
+    name: Search Stemmed
+    description: >-
+      ## Usage
+
+
+      Will return all Bible verses that match the given word at `?query=` using a stemmed query argument. Must be lowercase
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673890590699
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_fa04c1f582d3442b9bc3e4bb46ecb441
+    parentId: wrk_46f987bbe97a4103a36192e73b981196
+    modified: 1673890588359
+    created: 1673890588359
+    name: Search
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1673890588359
+    _type: request_group
+  - _id: req_1914e5b3ab634f6fb213c5028a543a77
+    parentId: fld_fa04c1f582d3442b9bc3e4bb46ecb441
+    modified: 1673892560772
+    created: 1673892129707
+    url: "{{ _.url }}/search/exact?query=god"
+    name: Search Exact
+    description: >-
+      ## Usage
+
+
+      Given a `/search/exact?query=prayer` will return a list of all verses that have the word `prayer` in them. Query must be lower case
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673892129707
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_74437380895343af916e64aec9951fe8
+    parentId: fld_cc116f4ea6574937a003691cac35fd0d
+    modified: 1673890425850
+    created: 1673884520682
+    url: "{{ _.url }}/bible/{{ _.book }}"
+    name: Get By Book Name
+    description: |-
+      ## Usage
+
+      Given `/books/:bookname`, returns all of the verses for the given book
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673884520682
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_cc116f4ea6574937a003691cac35fd0d
+    parentId: fld_f0264a4704a54b7aa387537b309c6b65
+    modified: 1673884989690
+    created: 1673884518719
+    name: Book
+    description: ""
+    environment:
+      book: Genisis
+    environmentPropertyOrder:
+      "&":
+        - book
+    metaSortKey: -1673884518719
+    _type: request_group
+  - _id: req_e8dc527ac65147f782ca0479e415ec31
+    parentId: fld_28a22260df7f45c8aeead8ea0bf3f878
+    modified: 1673890394579
+    created: 1673886547655
+    url: "{{ _.url }}/bible/{{ _.book }}/{{ _.chapter }}"
+    name: Get All Verses in Chapter
+    description: >-
+      ## Usage
+
+
+      Given `/bible/:book/:chapter`, will get all of the verses in the given `chapter` of the specific `book`
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673886547655
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_28a22260df7f45c8aeead8ea0bf3f878
+    parentId: fld_cc116f4ea6574937a003691cac35fd0d
+    modified: 1673886537512
+    created: 1673886518277
+    name: Chapter
+    description: ""
+    environment:
+      chapter: 1
+    environmentPropertyOrder:
+      "&":
+        - chapter
+    metaSortKey: -1673886518277
+    _type: request_group
+  - _id: req_5f9553a43cd442998d91e8d474c10f36
+    parentId: fld_20a6ca8a7a8f4e76ae3e23c6eb35401f
+    modified: 1673886544693
+    created: 1673884963961
+    url: "{{ _.url }}/bible/{{ _.book }}/{{ _.chapter }}/verses?start=1&end=10"
+    name: Get start->end Verses of Book
+    description: >-
+      ## Usage
+
+
+      Given `/books/:bookname/verses?start=1&end=10`, gets the first 10 verses of the given book. 
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1673884963961
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_20a6ca8a7a8f4e76ae3e23c6eb35401f
+    parentId: fld_28a22260df7f45c8aeead8ea0bf3f878
+    modified: 1673886522355
+    created: 1673884962922
+    name: Verses
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1673884962922
+    _type: request_group
+  - _id: env_5d45bcba8a78b488373b29cc210b2f3e8f55bd54
+    parentId: wrk_46f987bbe97a4103a36192e73b981196
+    modified: 1673883316887
+    created: 1673883316887
+    name: Base Environment
+    data: {}
+    dataPropertyOrder: null
+    color: null
+    isPrivate: false
+    metaSortKey: 1673883316887
+    _type: environment
+  - _id: jar_5d45bcba8a78b488373b29cc210b2f3e8f55bd54
+    parentId: wrk_46f987bbe97a4103a36192e73b981196
+    modified: 1673883316889
+    created: 1673883316889
+    name: Default Jar
+    cookies: []
+    _type: cookie_jar
+  - _id: spc_e2285cd29dc74ad1bc7764ecb3bdcc73
+    parentId: wrk_46f987bbe97a4103a36192e73b981196
+    modified: 1673883316884
+    created: 1673883316884
+    fileName: Public API
+    contents: ""
+    contentType: yaml
+    _type: api_spec
+  - _id: env_4717487db94649018944988281d4ddcf
+    parentId: env_5d45bcba8a78b488373b29cc210b2f3e8f55bd54
+    modified: 1673883427125
+    created: 1673883323005
+    name: Local
+    data:
+      url: http://localhost:9999
+    dataPropertyOrder:
+      "&":
+        - url
+    color: "#14ff30"
+    isPrivate: false
+    metaSortKey: 1673883323005
+    _type: environment
